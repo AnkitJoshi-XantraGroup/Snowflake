@@ -26,7 +26,17 @@ A comprehensive platform for Snowflake cost optimization, performance tuning, go
 - **Failed Login Monitoring**: Security threat detection and alerting
 - **Compliance Dashboard**: GDPR, HIPAA, and SOC2 compliance tracking
 
-### 4. Migration & Integration Toolkit
+### 4. AI & ML Monitoring
+- **Cortex AI Usage Tracking**: Monitor Snowflake Cortex AI function usage and credits
+- **LLM Model Analytics**: Track usage across different language models (Llama, Mistral, Arctic, etc.)
+- **Credit Consumption**: Real-time monitoring of AI/ML credit usage
+- **User Activity**: Track AI/ML adoption by user
+- **Performance Metrics**: Monitor AI call duration and error rates
+- **Cost Optimization**: Recommendations for model selection and usage patterns
+- **Function Breakdown**: Usage statistics for COMPLETE, SENTIMENT, TRANSLATE, SUMMARIZE, etc.
+- **Model Comparison**: Compare performance and cost across different LLM models
+
+### 5. Migration & Integration Toolkit
 - **SQL Dialect Conversion**: Automatic conversion from Oracle, MySQL, MS SQL to Snowflake
 - **Schema Compatibility Analysis**: Identify migration challenges before they occur
 - **DDL Generation**: Automatic table creation scripts for Snowflake
@@ -154,6 +164,16 @@ Ensure compliance and security:
 - Review and create data masking policies
 - Generate compliance reports
 
+### AI & ML Monitoring
+Track and optimize Snowflake AI/ML usage:
+- View AI/ML usage summary and credit consumption
+- Monitor Cortex AI function usage (COMPLETE, SENTIMENT, TRANSLATE, etc.)
+- Track LLM model performance (Llama, Mistral, Arctic, etc.)
+- Analyze usage by user and identify adoption patterns
+- View expensive AI calls and optimization opportunities
+- Get recommendations for model selection and cost optimization
+- Access list of supported Cortex functions and LLM models
+
 ### Migration Toolkit
 Accelerate your migration to Snowflake:
 - Convert SQL from other databases (Oracle, MySQL, MS SQL)
@@ -189,6 +209,18 @@ Once the application is running, access the interactive API documentation:
 - `POST /api/governance/detect-sensitive-columns` - Detect sensitive columns
 - `GET /api/governance/failed-logins` - Get failed login attempts
 - `GET /api/governance/compliance-report` - Generate compliance report
+
+#### AI/ML Monitoring
+- `GET /api/ai-ml/summary` - Get AI/ML usage summary
+- `GET /api/ai-ml/cortex-by-function` - Get Cortex usage by function
+- `GET /api/ai-ml/llm-models` - Get LLM model usage statistics
+- `GET /api/ai-ml/usage-by-user` - Get AI/ML usage by user
+- `GET /api/ai-ml/usage-trend` - Get AI/ML usage trend over time
+- `GET /api/ai-ml/expensive-calls` - Get expensive AI/ML calls
+- `GET /api/ai-ml/error-rate` - Get AI/ML error rate statistics
+- `GET /api/ai-ml/recommendations` - Get AI/ML optimization recommendations
+- `GET /api/ai-ml/cortex-functions` - Get list of available Cortex functions
+- `GET /api/ai-ml/supported-models` - Get list of supported LLM models
 
 #### Migration
 - `POST /api/migration/convert-sql` - Convert SQL dialect
