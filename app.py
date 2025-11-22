@@ -17,6 +17,7 @@ from modules.cost_intelligence import CostIntelligenceEngine
 from modules.performance_advisor import PerformanceAdvisor
 from modules.governance_security import GovernanceSecurityHub
 from modules.migration_toolkit import MigrationToolkit
+from modules.ai_ml_monitor import AIMLMonitor
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +41,7 @@ cost_engine = CostIntelligenceEngine(snowflake_manager)
 performance_advisor = PerformanceAdvisor(snowflake_manager)
 governance_hub = GovernanceSecurityHub(snowflake_manager)
 migration_toolkit = MigrationToolkit(snowflake_manager)
+ai_ml_monitor = AIMLMonitor(snowflake_manager)
 
 
 # Pydantic models
@@ -329,6 +331,124 @@ async def get_migration_recommendations():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# AI/ML Monitoring endpoints
+@app.get("/api/ai-ml/summary")
+async def get_ai_ml_summary(days: int = 7):
+    """Get AI/ML usage summary"""
+    try:
+        cortex_summary = ai_ml_monitor.get_cortex_usage_summary(days=days)
+        snowpark_ml = ai_ml_monitor.get_snowpark_ml_usage(days=days)
+        cost_estimate = ai_ml_monitor.estimate_ai_cost(days=days)
+
+        return {
+            "cortex": cortex_summary,
+            "snowpark_ml": snowpark_ml,
+            "cost_estimate": cost_estimate,
+        }
+    except Exception as e:
+        logger.error(f"Failed to get AI/ML summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/cortex-by-function")
+async def get_cortex_by_function(days: int = 7):
+    """Get Cortex usage by function"""
+    try:
+        usage = ai_ml_monitor.get_cortex_usage_by_function(days=days)
+        return {"functions": usage}
+    except Exception as e:
+        logger.error(f"Failed to get Cortex usage by function: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/llm-models")
+async def get_llm_model_usage(days: int = 7):
+    """Get LLM model usage statistics"""
+    try:
+        usage = ai_ml_monitor.get_llm_model_usage(days=days)
+        return {"models": usage}
+    except Exception as e:
+        logger.error(f"Failed to get LLM model usage: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/usage-by-user")
+async def get_ai_ml_usage_by_user(days: int = 7):
+    """Get AI/ML usage by user"""
+    try:
+        usage = ai_ml_monitor.get_cortex_usage_by_user(days=days)
+        return {"users": usage}
+    except Exception as e:
+        logger.error(f"Failed to get AI/ML usage by user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/usage-trend")
+async def get_ai_ml_usage_trend(days: int = 30):
+    """Get AI/ML usage trend over time"""
+    try:
+        trend = ai_ml_monitor.get_cortex_usage_trend(days=days)
+        return {"trend": trend}
+    except Exception as e:
+        logger.error(f"Failed to get AI/ML usage trend: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/expensive-calls")
+async def get_expensive_ai_calls(days: int = 7, min_duration_ms: int = 10000):
+    """Get expensive AI/ML calls"""
+    try:
+        calls = ai_ml_monitor.get_expensive_cortex_calls(days=days, min_duration_ms=min_duration_ms)
+        return {"expensive_calls": calls}
+    except Exception as e:
+        logger.error(f"Failed to get expensive AI calls: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/error-rate")
+async def get_ai_ml_error_rate(days: int = 7):
+    """Get AI/ML error rate statistics"""
+    try:
+        error_stats = ai_ml_monitor.get_cortex_error_rate(days=days)
+        return error_stats
+    except Exception as e:
+        logger.error(f"Failed to get AI/ML error rate: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/recommendations")
+async def get_ai_ml_recommendations():
+    """Get AI/ML optimization recommendations"""
+    try:
+        recommendations = ai_ml_monitor.generate_ai_recommendations()
+        return {"recommendations": recommendations}
+    except Exception as e:
+        logger.error(f"Failed to get AI/ML recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/cortex-functions")
+async def get_cortex_functions():
+    """Get list of available Cortex functions"""
+    try:
+        functions = ai_ml_monitor.get_cortex_functions_list()
+        return {"functions": functions}
+    except Exception as e:
+        logger.error(f"Failed to get Cortex functions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai-ml/supported-models")
+async def get_supported_models():
+    """Get list of supported LLM models"""
+    try:
+        models = ai_ml_monitor.get_supported_models_list()
+        return {"models": models}
+    except Exception as e:
+        logger.error(f"Failed to get supported models: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Dashboard endpoint
 @app.get("/api/dashboard/overview")
 async def get_dashboard_overview():
@@ -339,6 +459,9 @@ async def get_dashboard_overview():
             "cost_recommendations": cost_engine.generate_warehouse_recommendations()[:5],
             "performance_recommendations": performance_advisor.generate_performance_recommendations()[:5],
             "governance_recommendations": governance_hub.generate_governance_recommendations()[:5],
+            "ai_ml_summary": ai_ml_monitor.get_cortex_usage_summary(days=7),
+            "ai_ml_cost": ai_ml_monitor.estimate_ai_cost(days=7),
+            "ai_ml_recommendations": ai_ml_monitor.generate_ai_recommendations()[:5],
         }
         return overview
     except Exception as e:
