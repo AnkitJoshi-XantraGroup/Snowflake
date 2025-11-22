@@ -307,6 +307,155 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .query-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .query-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .query-card.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .query-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .query-id {
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .query-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .query-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .query-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .query-preview {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 8px;
+        }
+
+        .query-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .performance-score {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .score-excellent {
+            background: #28a745;
+            color: white;
+        }
+
+        .score-good {
+            background: #28a745;
+            color: white;
+        }
+
+        .score-fair {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .score-poor {
+            background: #dc3545;
+            color: white;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .best-practice-item {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .best-practice-item.success {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .best-practice-item.warning {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+
+        .query-detail-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -402,7 +551,19 @@
                 <button class="btn btn-primary" onclick="loadPerformanceRecommendations()">Recommendations</button>
             </div>
 
-            <h3 style="margin-top: 30px;">Analyze Query</h3>
+            <h3 style="margin-top: 30px;">📊 Query Explorer</h3>
+            <div style="background: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+                <strong>Interactive Query Analysis:</strong> Browse all queries, click to view detailed profiles, and get AI-powered Snowflake best practice recommendations.
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="loadAllQueries()">Load Recent Queries</button>
+                <button class="btn btn-primary" onclick="loadAllQueries('SUCCESS')">Successful Only</button>
+                <button class="btn btn-primary" onclick="loadAllQueries('FAILED')">Failed Only</button>
+            </div>
+
+            <div id="query-explorer-content" class="results"></div>
+
+            <h3 style="margin-top: 30px;">Analyze Query Text</h3>
             <textarea id="query-text" class="query-textarea" placeholder="Paste your SQL query here for analysis..."></textarea>
             <button class="btn btn-primary" style="margin-top: 10px;" onclick="analyzeQuery()">Analyze Query</button>
 
@@ -1269,6 +1430,182 @@
                 content.innerHTML = html;
             } catch (error) {
                 content.innerHTML = '<div class="status-error">Error: ' + error.message + '</div>';
+            }
+        }
+
+        // Query Explorer Functions
+        let currentQueryDetails = null;
+
+        async function loadAllQueries(status = null) {
+            const content = document.getElementById('query-explorer-content');
+            content.innerHTML = '<div class="loading">Loading queries...</div>';
+
+            try {
+                let url = '/api/queries/all?days=7&limit=50';
+                if (status) {
+                    url += `&execution_status=${status}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let html = `<h3>Query History (Last 7 Days) - ${data.total} queries</h3>`;
+
+                if (data.queries.length === 0) {
+                    html += '<p>No queries found.</p>';
+                } else {
+                    data.queries.forEach(query => {
+                        const queryText = query.QUERY_TEXT || '';
+                        const preview = queryText.substring(0, 100);
+                        const statusClass = query.EXECUTION_STATUS === 'SUCCESS' ? 'success' : 'failed';
+                        const executionTime = (query.TOTAL_ELAPSED_TIME / 1000).toFixed(2);
+
+                        html += `
+                            <div class="query-card" onclick="analyzeQueryByID('${query.QUERY_ID}')">
+                                <div class="query-card-header">
+                                    <span class="query-id">ID: ${query.QUERY_ID.substring(0, 20)}...</span>
+                                    <span class="query-status ${statusClass}">${query.EXECUTION_STATUS}</span>
+                                </div>
+                                <div class="query-preview">${preview}...</div>
+                                <div class="query-meta">
+                                    <span>👤 ${query.USER_NAME}</span>
+                                    <span>🏢 ${query.WAREHOUSE_NAME || 'N/A'}</span>
+                                    <span>⏱️ ${executionTime}s</span>
+                                    <span>📊 ${(query.BYTES_SCANNED / (1024**3)).toFixed(2)} GB scanned</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error: ' + error.message + '</div>';
+            }
+        }
+
+        async function analyzeQueryByID(queryId) {
+            const content = document.getElementById('query-explorer-content');
+            content.innerHTML = '<div class="loading">Analyzing query against Snowflake best practices...</div>';
+
+            try {
+                const response = await fetch(`/api/queries/${queryId}/analyze`);
+                const analysis = await response.json();
+
+                currentQueryDetails = analysis;
+
+                let html = '<button class="btn btn-primary" onclick="loadAllQueries()">← Back to Query List</button>';
+
+                html += '<div class="query-detail-section">';
+                html += `<h3>Query Analysis: ${queryId}</h3>`;
+
+                // Performance Score
+                const score = analysis.performance_score;
+                let scoreClass = 'score-poor';
+                let scoreLabel = 'Poor';
+                if (score >= 90) {
+                    scoreClass = 'score-excellent';
+                    scoreLabel = 'Excellent';
+                } else if (score >= 75) {
+                    scoreClass = 'score-good';
+                    scoreLabel = 'Good';
+                } else if (score >= 50) {
+                    scoreClass = 'score-fair';
+                    scoreLabel = 'Fair';
+                }
+
+                html += `<div style="margin: 20px 0;">
+                    <strong>Performance Score:</strong>
+                    <span class="performance-score ${scoreClass}">${score}/100 - ${scoreLabel}</span>
+                </div>`;
+
+                // Query Text
+                html += `<div style="margin: 20px 0;">
+                    <h4>Query Text:</h4>
+                    <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;">${analysis.query_text}</pre>
+                </div>`;
+
+                // Key Metrics
+                html += '<h4>Key Metrics:</h4>';
+                html += '<div class="metric-grid">';
+                html += `
+                    <div class="metric-box">
+                        <div class="metric-label">Total Time</div>
+                        <div class="metric-value">${analysis.metrics.total_elapsed_time_seconds.toFixed(2)}s</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Execution Time</div>
+                        <div class="metric-value">${analysis.metrics.execution_time_seconds.toFixed(2)}s</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Cache Usage</div>
+                        <div class="metric-value">${analysis.metrics.cache_percentage.toFixed(1)}%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Data Scanned</div>
+                        <div class="metric-value">${analysis.metrics.bytes_scanned_gb.toFixed(2)} GB</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Partition Efficiency</div>
+                        <div class="metric-value">${analysis.metrics.partition_efficiency.toFixed(1)}%</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Rows Produced</div>
+                        <div class="metric-value">${(analysis.metrics.rows_produced || 0).toLocaleString()}</div>
+                    </div>
+                `;
+                html += '</div>';
+
+                // Successes
+                if (analysis.successes && analysis.successes.length > 0) {
+                    html += '<h4 style="margin-top: 30px;">✅ Best Practices Followed:</h4>';
+                    analysis.successes.forEach(success => {
+                        html += `
+                            <div class="best-practice-item success">
+                                <strong>${success.practice}</strong>
+                                <p>${success.message}</p>
+                                ${success.details ? '<p><em>' + success.details + '</em></p>' : ''}
+                            </div>
+                        `;
+                    });
+                }
+
+                // Warnings
+                if (analysis.warnings && analysis.warnings.length > 0) {
+                    html += '<h4 style="margin-top: 30px;">⚠️ Critical Warnings:</h4>';
+                    analysis.warnings.forEach(warning => {
+                        html += `
+                            <div class="recommendation ${warning.severity?.toLowerCase() || 'high'}">
+                                <span class="severity-badge severity-${warning.severity?.toLowerCase() || 'high'}">${warning.severity || 'WARNING'}</span>
+                                <strong>${warning.practice}</strong>
+                                <p><strong>Issue:</strong> ${warning.message}</p>
+                                <p><strong>Recommendation:</strong> ${warning.suggestion}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Recommendations
+                if (analysis.recommendations && analysis.recommendations.length > 0) {
+                    html += '<h4 style="margin-top: 30px;">💡 Optimization Recommendations:</h4>';
+                    analysis.recommendations.forEach(rec => {
+                        html += `
+                            <div class="recommendation ${rec.severity?.toLowerCase() || 'low'}">
+                                <span class="severity-badge severity-${rec.severity?.toLowerCase() || 'low'}">${rec.severity || 'INFO'}</span>
+                                <strong>${rec.practice}</strong>
+                                <p><strong>Finding:</strong> ${rec.message}</p>
+                                <p><strong>Recommendation:</strong> ${rec.suggestion}</p>
+                                ${rec.impact ? '<p><strong>Impact:</strong> ' + rec.impact + '</p>' : ''}
+                            </div>
+                        `;
+                    });
+                }
+
+                html += '</div>';
+
+                content.innerHTML = html;
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error analyzing query: ' + error.message + '</div>';
             }
         }
     </script>

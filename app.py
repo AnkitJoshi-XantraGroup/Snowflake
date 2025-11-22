@@ -18,6 +18,7 @@ from modules.performance_advisor import PerformanceAdvisor
 from modules.governance_security import GovernanceSecurityHub
 from modules.migration_toolkit import MigrationToolkit
 from modules.ai_ml_monitor import AIMLMonitor
+from modules.query_explorer import QueryExplorer
 
 # Configure logging
 logging.basicConfig(
@@ -42,6 +43,7 @@ performance_advisor = PerformanceAdvisor(snowflake_manager)
 governance_hub = GovernanceSecurityHub(snowflake_manager)
 migration_toolkit = MigrationToolkit(snowflake_manager)
 ai_ml_monitor = AIMLMonitor(snowflake_manager)
+query_explorer = QueryExplorer(snowflake_manager)
 
 
 # Pydantic models
@@ -223,6 +225,60 @@ async def get_performance_recommendations():
         return {"recommendations": recommendations}
     except Exception as e:
         logger.error(f"Failed to get performance recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Query Explorer endpoints
+@app.get("/api/queries/all")
+async def get_all_queries(
+    days: int = 7,
+    limit: int = 100,
+    execution_status: str = None,
+    user_filter: str = None,
+    warehouse_filter: str = None
+):
+    """Get all queries with optional filters"""
+    try:
+        queries = query_explorer.get_all_queries(
+            days=days,
+            limit=limit,
+            execution_status=execution_status,
+            user_filter=user_filter,
+            warehouse_filter=warehouse_filter
+        )
+        return {"queries": queries, "total": len(queries)}
+    except Exception as e:
+        logger.error(f"Failed to get all queries: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/queries/{query_id}/profile")
+async def get_query_detailed_profile(query_id: str):
+    """Get detailed profile for a specific query"""
+    try:
+        profile = query_explorer.get_query_detailed_profile(query_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Query not found")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get query profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/queries/{query_id}/analyze")
+async def analyze_query_best_practices(query_id: str):
+    """Analyze query against Snowflake best practices"""
+    try:
+        analysis = query_explorer.analyze_query_with_best_practices(query_id)
+        if "error" in analysis:
+            raise HTTPException(status_code=404, detail=analysis["error"])
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to analyze query: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
