@@ -319,10 +319,17 @@
 
         <div class="credentials-section">
             <h2>Snowflake Credentials</h2>
+            <div style="background: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+                <strong>Account Identifier Formats:</strong><br>
+                • <code>abc12345</code> (account locator)<br>
+                • <code>orgname-accountname</code> (organization format)<br>
+                • <code>abc12345.us-east-1</code> (with region)<br>
+                • You can also enter the full URL (e.g., <code>abc12345.snowflakecomputing.com</code>) - it will be normalized automatically
+            </div>
             <div class="credentials-form">
                 <div class="form-group">
                     <label for="account">Account *</label>
-                    <input type="text" id="account" placeholder="your-account.snowflakecomputing.com">
+                    <input type="text" id="account" placeholder="abc12345 or orgname-accountname">
                 </div>
                 <div class="form-group">
                     <label for="user">User *</label>
@@ -484,16 +491,18 @@
 
                 if (response.ok) {
                     statusDiv.className = 'status-message status-success';
-                    statusDiv.textContent = result.message + ' (Snowflake version: ' + result.snowflake_version + ')';
+                    statusDiv.innerHTML = result.message + ' (Snowflake version: ' + result.snowflake_version + ')';
                 } else {
                     statusDiv.className = 'status-message status-error';
-                    statusDiv.textContent = 'Error: ' + result.detail;
+                    // Preserve line breaks in error messages
+                    const errorMessage = result.detail ? result.detail.replace(/\n/g, '<br>') : 'Unknown error';
+                    statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + errorMessage;
                 }
 
                 statusDiv.style.display = 'block';
             } catch (error) {
                 statusDiv.className = 'status-message status-error';
-                statusDiv.textContent = 'Connection error: ' + error.message;
+                statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + error.message;
                 statusDiv.style.display = 'block';
             }
         }
