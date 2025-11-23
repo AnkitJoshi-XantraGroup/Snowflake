@@ -1,0 +1,30 @@
+{
+  "default": {
+    "account": "abc12345",
+    "user": "your_username",
+    "password": "your_password",
+    "warehouse": "COMPUTE_WH",
+    "database": "YOUR_DATABASE",
+    "schema": "PUBLIC",
+    "role": "ACCOUNTADMIN"
+  },
+  "production": {
+    "account": "orgname-accountname",
+    "user": "prod_user",
+    "private_key_path": "/path/to/rsa_key.p8",
+    "private_key_passphrase": "optional_passphrase",
+    "warehouse": "PROD_WH",
+    "database": "PRODUCTION_DB",
+    "schema": "PUBLIC",
+    "role": "SYSADMIN"
+  },
+  "development": {
+    "account": "abc12345.us-east-1",
+    "user": "dev_user",
+    "password": "dev_password",
+    "warehouse": "DEV_WH",
+    "database": "DEV_DB",
+    "schema": "PUBLIC",
+    "role": "DEVELOPER"
+  }
+}

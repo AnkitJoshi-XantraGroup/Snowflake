@@ -50,11 +50,29 @@ query_explorer = QueryExplorer(snowflake_manager)
 class SnowflakeCredentials(BaseModel):
     account: str
     user: str
-    password: str
+    password: Optional[str] = None
     warehouse: Optional[str] = None
     database: Optional[str] = None
     schema: Optional[str] = None
     role: Optional[str] = None
+    private_key_path: Optional[str] = None
+    private_key_passphrase: Optional[str] = None
+
+
+class SnowflakePrivateKeyCredentials(BaseModel):
+    account: str
+    user: str
+    private_key_path: str
+    private_key_passphrase: Optional[str] = None
+    warehouse: Optional[str] = None
+    database: Optional[str] = None
+    schema: Optional[str] = None
+    role: Optional[str] = None
+
+
+class SnowflakeConfigFileCredentials(BaseModel):
+    config_path: str
+    connection_name: str = "default"
 
 
 class QueryAnalysisRequest(BaseModel):
@@ -87,12 +105,48 @@ async def health_check():
 # Credentials endpoints
 @app.post("/api/credentials/configure")
 async def configure_credentials(credentials: SnowflakeCredentials):
-    """Configure Snowflake credentials"""
+    """Configure Snowflake credentials (password or private key)"""
     try:
         snowflake_manager.set_credentials(
             account=credentials.account,
             user=credentials.user,
             password=credentials.password,
+            warehouse=credentials.warehouse,
+            database=credentials.database,
+            schema=credentials.schema,
+            role=credentials.role,
+            private_key_path=credentials.private_key_path,
+            private_key_passphrase=credentials.private_key_passphrase,
+        )
+
+        # Test the connection
+        result = snowflake_manager.test_connection()
+
+        if result["success"]:
+            logger.info(f"Credentials configured successfully for user: {credentials.user} using {result.get('auth_method')} auth")
+            return {
+                "success": True,
+                "message": "Credentials configured and tested successfully",
+                "snowflake_version": result.get("version"),
+                "auth_method": result.get("auth_method"),
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result.get("error"))
+
+    except Exception as e:
+        logger.error(f"Failed to configure credentials: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/credentials/configure-with-key")
+async def configure_credentials_with_key(credentials: SnowflakePrivateKeyCredentials):
+    """Configure Snowflake credentials using private key authentication"""
+    try:
+        snowflake_manager.set_credentials_from_key(
+            account=credentials.account,
+            user=credentials.user,
+            private_key_path=credentials.private_key_path,
+            private_key_passphrase=credentials.private_key_passphrase,
             warehouse=credentials.warehouse,
             database=credentials.database,
             schema=credentials.schema,
@@ -103,17 +157,46 @@ async def configure_credentials(credentials: SnowflakeCredentials):
         result = snowflake_manager.test_connection()
 
         if result["success"]:
-            logger.info(f"Credentials configured successfully for user: {credentials.user}")
+            logger.info(f"Credentials configured successfully for user: {credentials.user} using private key auth")
             return {
                 "success": True,
-                "message": "Credentials configured and tested successfully",
+                "message": "Credentials configured with private key and tested successfully",
                 "snowflake_version": result.get("version"),
+                "auth_method": result.get("auth_method"),
             }
         else:
             raise HTTPException(status_code=400, detail=result.get("error"))
 
     except Exception as e:
-        logger.error(f"Failed to configure credentials: {str(e)}")
+        logger.error(f"Failed to configure credentials with private key: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/credentials/configure-from-file")
+async def configure_credentials_from_file(credentials: SnowflakeConfigFileCredentials):
+    """Configure Snowflake credentials from a configuration file (JSON or TOML)"""
+    try:
+        snowflake_manager.set_credentials_from_config(
+            config_path=credentials.config_path,
+            connection_name=credentials.connection_name,
+        )
+
+        # Test the connection
+        result = snowflake_manager.test_connection()
+
+        if result["success"]:
+            logger.info(f"Credentials loaded from config file: {credentials.config_path}")
+            return {
+                "success": True,
+                "message": f"Credentials loaded from config file and tested successfully",
+                "snowflake_version": result.get("version"),
+                "auth_method": result.get("auth_method"),
+            }
+        else:
+            raise HTTPException(status_code=400, detail=result.get("error"))
+
+    except Exception as e:
+        logger.error(f"Failed to load credentials from config file: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

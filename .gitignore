@@ -81,3 +81,17 @@ dmypy.json
 
 # Pyre
 .pyre/
+
+# Snowflake Credentials and Config Files
+*.config.json
+*.config.toml
+snowflake.*.json
+snowflake.*.toml
+my_snowflake_config.*
+*_snowflake_config.*
+
+# Private Keys
+*.p8
+*.pem
+rsa_key*
+!rsa_key.pub.example

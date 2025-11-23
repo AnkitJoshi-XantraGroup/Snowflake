@@ -91,16 +91,43 @@ A comprehensive platform for Snowflake cost optimization, performance tuning, go
 
 ## Configuration
 
-### Snowflake Credentials
+### Snowflake Authentication
 
-You can configure Snowflake credentials in two ways:
+SOGS supports **three authentication methods** for connecting to Snowflake:
 
-#### Method 1: Via Web UI (Recommended)
+#### 1. Password Authentication (Simplest)
+Traditional username and password authentication.
+
+#### 2. Private Key Authentication (Most Secure - Recommended for Production)
+RSA key-pair authentication for enhanced security without storing passwords.
+
+#### 3. Configuration File (Best for Multiple Connections)
+Store credentials in JSON or TOML files to manage multiple environments (dev, staging, production).
+
+### Quick Start - Web UI
+
 1. Navigate to `http://localhost:8000`
-2. Fill in the Snowflake credentials form
-3. Click "Connect to Snowflake"
+2. Select your preferred authentication method:
+   - **Password Authentication**: Enter account, username, and password
+   - **Private Key Authentication**: Provide path to your RSA private key file
+   - **Configuration File**: Point to your JSON/TOML config file
+3. Click the corresponding "Connect" button
 
-#### Method 2: Via Environment Variables
+### Detailed Authentication Guide
+
+For complete setup instructions including:
+- How to generate RSA key pairs
+- Private key setup in Snowflake
+- Configuration file formats and examples
+- Docker deployment with authentication
+- Security best practices
+
+**See [AUTHENTICATION.md](AUTHENTICATION.md) for the comprehensive authentication guide.**
+
+### Environment Variables (Alternative)
+
+You can also use environment variables for password authentication:
+
 1. Copy `.env.example` to `.env`:
    ```bash
    cp .env.example .env
@@ -190,7 +217,9 @@ Once the application is running, access the interactive API documentation:
 ### Key API Endpoints
 
 #### Credentials
-- `POST /api/credentials/configure` - Configure Snowflake credentials
+- `POST /api/credentials/configure` - Configure Snowflake credentials (password or private key)
+- `POST /api/credentials/configure-with-key` - Configure with private key authentication
+- `POST /api/credentials/configure-from-file` - Configure from configuration file (JSON/TOML)
 - `GET /api/credentials/test` - Test current credentials
 
 #### Cost Intelligence

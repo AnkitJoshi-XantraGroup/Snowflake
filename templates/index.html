@@ -57,6 +57,42 @@
             margin-bottom: 20px;
         }
 
+        .auth-method-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .auth-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .auth-tab:hover {
+            color: #2196f3;
+        }
+
+        .auth-tab.active {
+            color: #2196f3;
+            border-bottom-color: #2196f3;
+            font-weight: 600;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
         .form-group {
             display: flex;
             flex-direction: column;
@@ -475,37 +511,116 @@
                 • <code>abc12345.us-east-1</code> (with region)<br>
                 • You can also enter the full URL (e.g., <code>abc12345.snowflakecomputing.com</code>) - it will be normalized automatically
             </div>
-            <div class="credentials-form">
-                <div class="form-group">
-                    <label for="account">Account *</label>
-                    <input type="text" id="account" placeholder="abc12345 or orgname-accountname">
-                </div>
-                <div class="form-group">
-                    <label for="user">User *</label>
-                    <input type="text" id="user" placeholder="username">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password *</label>
-                    <input type="password" id="password" placeholder="password">
-                </div>
-                <div class="form-group">
-                    <label for="warehouse">Warehouse</label>
-                    <input type="text" id="warehouse" placeholder="COMPUTE_WH">
-                </div>
-                <div class="form-group">
-                    <label for="database">Database</label>
-                    <input type="text" id="database" placeholder="DATABASE_NAME">
-                </div>
-                <div class="form-group">
-                    <label for="schema">Schema</label>
-                    <input type="text" id="schema" placeholder="PUBLIC">
-                </div>
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <input type="text" id="role" placeholder="ACCOUNTADMIN">
-                </div>
+
+            <!-- Authentication Method Tabs -->
+            <div class="auth-method-tabs">
+                <button class="auth-tab active" onclick="switchAuthMethod('password')">Password Authentication</button>
+                <button class="auth-tab" onclick="switchAuthMethod('privatekey')">Private Key Authentication</button>
+                <button class="auth-tab" onclick="switchAuthMethod('configfile')">Configuration File</button>
             </div>
-            <button class="btn btn-primary" onclick="configureCredentials()">Connect to Snowflake</button>
+
+            <!-- Password Authentication Form -->
+            <div id="password-form" class="auth-form active">
+                <div class="credentials-form">
+                    <div class="form-group">
+                        <label for="account">Account *</label>
+                        <input type="text" id="account" placeholder="abc12345 or orgname-accountname">
+                    </div>
+                    <div class="form-group">
+                        <label for="user">User *</label>
+                        <input type="text" id="user" placeholder="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" placeholder="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="warehouse">Warehouse</label>
+                        <input type="text" id="warehouse" placeholder="COMPUTE_WH">
+                    </div>
+                    <div class="form-group">
+                        <label for="database">Database</label>
+                        <input type="text" id="database" placeholder="DATABASE_NAME">
+                    </div>
+                    <div class="form-group">
+                        <label for="schema">Schema</label>
+                        <input type="text" id="schema" placeholder="PUBLIC">
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <input type="text" id="role" placeholder="ACCOUNTADMIN">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="configureCredentials()">Connect to Snowflake</button>
+            </div>
+
+            <!-- Private Key Authentication Form -->
+            <div id="privatekey-form" class="auth-form">
+                <div style="background: #fff3e0; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+                    <strong>Private Key Authentication:</strong><br>
+                    • Requires an RSA private key file (PEM format)<br>
+                    • More secure than password authentication<br>
+                    • See documentation for key generation instructions
+                </div>
+                <div class="credentials-form">
+                    <div class="form-group">
+                        <label for="pk-account">Account *</label>
+                        <input type="text" id="pk-account" placeholder="abc12345 or orgname-accountname">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-user">User *</label>
+                        <input type="text" id="pk-user" placeholder="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-path">Private Key Path *</label>
+                        <input type="text" id="pk-path" placeholder="/path/to/rsa_key.p8">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-passphrase">Private Key Passphrase</label>
+                        <input type="password" id="pk-passphrase" placeholder="Optional passphrase">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-warehouse">Warehouse</label>
+                        <input type="text" id="pk-warehouse" placeholder="COMPUTE_WH">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-database">Database</label>
+                        <input type="text" id="pk-database" placeholder="DATABASE_NAME">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-schema">Schema</label>
+                        <input type="text" id="pk-schema" placeholder="PUBLIC">
+                    </div>
+                    <div class="form-group">
+                        <label for="pk-role">Role</label>
+                        <input type="text" id="pk-role" placeholder="ACCOUNTADMIN">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="configureWithPrivateKey()">Connect with Private Key</button>
+            </div>
+
+            <!-- Configuration File Form -->
+            <div id="configfile-form" class="auth-form">
+                <div style="background: #e8f5e9; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
+                    <strong>Configuration File:</strong><br>
+                    • Supports JSON and TOML formats<br>
+                    • Store all credentials in a single file<br>
+                    • Ideal for managing multiple connections<br>
+                    • See documentation for file format examples
+                </div>
+                <div class="credentials-form">
+                    <div class="form-group">
+                        <label for="config-path">Config File Path *</label>
+                        <input type="text" id="config-path" placeholder="/path/to/snowflake_config.json">
+                    </div>
+                    <div class="form-group">
+                        <label for="config-name">Connection Name</label>
+                        <input type="text" id="config-name" placeholder="default" value="default">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="configureFromConfigFile()">Connect from Config File</button>
+            </div>
+
             <div id="status-message" class="status-message"></div>
         </div>
 
@@ -651,6 +766,27 @@
             event.target.classList.add('active');
         }
 
+        function switchAuthMethod(method) {
+            // Hide all auth forms
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+            });
+
+            // Remove active from all auth tabs
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected form
+            document.getElementById(method + '-form').classList.add('active');
+
+            // Mark auth tab as active
+            event.target.classList.add('active');
+
+            // Clear status message
+            document.getElementById('status-message').innerHTML = '';
+        }
+
         async function configureCredentials() {
             const credentials = {
                 account: document.getElementById('account').value,
@@ -679,6 +815,80 @@
                 } else {
                     statusDiv.className = 'status-message status-error';
                     // Preserve line breaks in error messages
+                    const errorMessage = result.detail ? result.detail.replace(/\n/g, '<br>') : 'Unknown error';
+                    statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + errorMessage;
+                }
+
+                statusDiv.style.display = 'block';
+            } catch (error) {
+                statusDiv.className = 'status-message status-error';
+                statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + error.message;
+                statusDiv.style.display = 'block';
+            }
+        }
+
+        async function configureWithPrivateKey() {
+            const credentials = {
+                account: document.getElementById('pk-account').value,
+                user: document.getElementById('pk-user').value,
+                private_key_path: document.getElementById('pk-path').value,
+                private_key_passphrase: document.getElementById('pk-passphrase').value || null,
+                warehouse: document.getElementById('pk-warehouse').value || null,
+                database: document.getElementById('pk-database').value || null,
+                schema: document.getElementById('pk-schema').value || null,
+                role: document.getElementById('pk-role').value || null
+            };
+
+            const statusDiv = document.getElementById('status-message');
+
+            try {
+                const response = await fetch('/api/credentials/configure-with-key', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(credentials)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusDiv.className = 'status-message status-success';
+                    statusDiv.innerHTML = result.message + ' (Snowflake version: ' + result.snowflake_version + ', Auth: ' + result.auth_method + ')';
+                } else {
+                    statusDiv.className = 'status-message status-error';
+                    const errorMessage = result.detail ? result.detail.replace(/\n/g, '<br>') : 'Unknown error';
+                    statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + errorMessage;
+                }
+
+                statusDiv.style.display = 'block';
+            } catch (error) {
+                statusDiv.className = 'status-message status-error';
+                statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + error.message;
+                statusDiv.style.display = 'block';
+            }
+        }
+
+        async function configureFromConfigFile() {
+            const credentials = {
+                config_path: document.getElementById('config-path').value,
+                connection_name: document.getElementById('config-name').value || 'default'
+            };
+
+            const statusDiv = document.getElementById('status-message');
+
+            try {
+                const response = await fetch('/api/credentials/configure-from-file', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(credentials)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    statusDiv.className = 'status-message status-success';
+                    statusDiv.innerHTML = result.message + ' (Snowflake version: ' + result.snowflake_version + ', Auth: ' + result.auth_method + ')';
+                } else {
+                    statusDiv.className = 'status-message status-error';
                     const errorMessage = result.detail ? result.detail.replace(/\n/g, '<br>') : 'Unknown error';
                     statusDiv.innerHTML = '<strong>Connection Error:</strong><br>' + errorMessage;
                 }
