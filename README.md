@@ -208,6 +208,15 @@ Accelerate your migration to Snowflake:
 - Get migration best practices and recommendations
 - Generate ELT pipeline templates
 
+### Data Modeller & Lineage
+Visualize and understand your data architecture:
+- **Table Relationships**: View entity-relationship diagrams with primary keys, foreign keys, and column details
+- **Lineage Explorer**: Trace upstream and downstream dependencies for any Snowflake object (tables, views, streams, tasks, pipes)
+- **Task DAG**: Visualize task dependencies as directed acyclic graphs with execution history
+- **Procedure Dependencies**: Explore stored procedure call graphs and object dependencies
+- **All Objects Lineage**: Get comprehensive lineage for all objects in a database/schema
+- Interactive visualizations with detailed metadata and relationship mapping
+
 ## API Documentation
 
 Once the application is running, access the interactive API documentation:
@@ -255,6 +264,13 @@ Once the application is running, access the interactive API documentation:
 - `POST /api/migration/convert-sql` - Convert SQL dialect
 - `POST /api/migration/analyze-schema` - Analyze schema compatibility
 - `GET /api/migration/recommendations` - Get migration best practices
+
+#### Data Modeller
+- `GET /api/data-modeller/table-relationships` - Get table relationships with foreign keys and primary keys
+- `GET /api/data-modeller/object-lineage` - Get upstream and downstream lineage for an object
+- `GET /api/data-modeller/task-dag` - Get Task DAG (Directed Acyclic Graph)
+- `GET /api/data-modeller/procedure-dependencies` - Get stored procedure dependencies and call graph
+- `GET /api/data-modeller/all-objects-lineage` - Get comprehensive lineage for all objects
 
 ## Docker Commands
 

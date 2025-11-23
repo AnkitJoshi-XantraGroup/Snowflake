@@ -19,6 +19,7 @@ from modules.governance_security import GovernanceSecurityHub
 from modules.migration_toolkit import MigrationToolkit
 from modules.ai_ml_monitor import AIMLMonitor
 from modules.query_explorer import QueryExplorer
+from modules.data_modeller import DataModeller
 
 # Configure logging
 logging.basicConfig(
@@ -44,6 +45,7 @@ governance_hub = GovernanceSecurityHub(snowflake_manager)
 migration_toolkit = MigrationToolkit(snowflake_manager)
 ai_ml_monitor = AIMLMonitor(snowflake_manager)
 query_explorer = QueryExplorer(snowflake_manager)
+data_modeller = DataModeller(snowflake_manager)
 
 
 # Pydantic models
@@ -585,6 +587,70 @@ async def get_supported_models():
         return {"models": models}
     except Exception as e:
         logger.error(f"Failed to get supported models: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Data Modeller endpoints
+@app.get("/api/data-modeller/table-relationships")
+async def get_table_relationships(database: Optional[str] = None, schema: Optional[str] = None):
+    """Get table relationships with foreign keys and primary keys"""
+    try:
+        relationships = data_modeller.get_table_relationships(database=database, schema=schema)
+        return relationships
+    except Exception as e:
+        logger.error(f"Failed to get table relationships: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/data-modeller/object-lineage")
+async def get_object_lineage(object_name: str, object_type: str = "TABLE", days: int = 30):
+    """Get upstream and downstream lineage for an object"""
+    try:
+        lineage = data_modeller.get_object_lineage(
+            object_name=object_name,
+            object_type=object_type,
+            days=days
+        )
+        return lineage
+    except Exception as e:
+        logger.error(f"Failed to get object lineage: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/data-modeller/task-dag")
+async def get_task_dag(database: Optional[str] = None, schema: Optional[str] = None):
+    """Get Task DAG (Directed Acyclic Graph)"""
+    try:
+        dag = data_modeller.get_task_dag(database=database, schema=schema)
+        return dag
+    except Exception as e:
+        logger.error(f"Failed to get task DAG: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/data-modeller/procedure-dependencies")
+async def get_procedure_dependencies(database: Optional[str] = None, schema: Optional[str] = None):
+    """Get stored procedure dependencies and call graph"""
+    try:
+        dependencies = data_modeller.get_procedure_dependencies(database=database, schema=schema)
+        return dependencies
+    except Exception as e:
+        logger.error(f"Failed to get procedure dependencies: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/data-modeller/all-objects-lineage")
+async def get_all_objects_lineage(database: str, schema: Optional[str] = None, limit: int = 100):
+    """Get comprehensive lineage for all objects"""
+    try:
+        lineage = data_modeller.get_all_objects_lineage(
+            database=database,
+            schema=schema,
+            limit=limit
+        )
+        return lineage
+    except Exception as e:
+        logger.error(f"Failed to get all objects lineage: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

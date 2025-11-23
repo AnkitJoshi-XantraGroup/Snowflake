@@ -631,6 +631,7 @@
             <button class="tab" onclick="switchTab('governance')">Governance & Security</button>
             <button class="tab" onclick="switchTab('aiml')">AI/ML Monitor</button>
             <button class="tab" onclick="switchTab('migration')">Migration Toolkit</button>
+            <button class="tab" onclick="switchTab('datamodeller')">Data Modeller</button>
         </div>
 
         <div id="dashboard-section" class="content-section active">
@@ -744,6 +745,102 @@
             </div>
 
             <div id="migration-content" class="results"></div>
+        </div>
+
+        <div id="datamodeller-section" class="content-section">
+            <h2>Data Modeller & Lineage</h2>
+            <div class="module-description">
+                <strong>Data Modeller:</strong> Visualize table relationships, explore data lineage, and analyze task/procedure dependencies with interactive diagrams and DAG visualizations.
+            </div>
+
+            <!-- Sub-tabs for Data Modeller features -->
+            <div class="auth-method-tabs" style="margin-top: 20px;">
+                <button class="auth-tab active" onclick="switchDataModellerTab('relationships')">Table Relationships</button>
+                <button class="auth-tab" onclick="switchDataModellerTab('lineage')">Lineage Explorer</button>
+                <button class="auth-tab" onclick="switchDataModellerTab('dag')">Task/Procedure DAG</button>
+            </div>
+
+            <!-- Table Relationships Tab -->
+            <div id="relationships-tab" class="auth-form active" style="display: block;">
+                <h3>Table Relationships & ER Diagram</h3>
+                <div style="background: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196f3;">
+                    <strong>Explore table relationships:</strong> Primary keys, foreign keys, and column details visualized as an entity-relationship diagram.
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="rel-database" placeholder="Database (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                    <input type="text" id="rel-schema" placeholder="Schema (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                    <button class="btn btn-primary" onclick="loadTableRelationships()">Load Relationships</button>
+                </div>
+
+                <div id="relationships-content" class="results"></div>
+            </div>
+
+            <!-- Lineage Explorer Tab -->
+            <div id="lineage-tab" class="auth-form" style="display: none;">
+                <h3>Object Lineage Explorer</h3>
+                <div style="background: #fff3e0; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ff9800;">
+                    <strong>Trace data lineage:</strong> Discover upstream sources and downstream consumers for any Snowflake object (tables, views, streams, etc.).
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="lineage-object" placeholder="Object name (DATABASE.SCHEMA.OBJECT)" style="flex: 2; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                    <select id="lineage-type" style="padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <option value="TABLE">Table</option>
+                        <option value="VIEW">View</option>
+                        <option value="STREAM">Stream</option>
+                        <option value="TASK">Task</option>
+                        <option value="PIPE">Pipe</option>
+                    </select>
+                    <input type="number" id="lineage-days" placeholder="Days" value="30" min="1" max="90" style="width: 100px; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                    <button class="btn btn-primary" onclick="loadObjectLineage()">Trace Lineage</button>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <strong>Or explore all objects:</strong>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="all-lineage-database" placeholder="Database *" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <input type="text" id="all-lineage-schema" placeholder="Schema (optional)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <input type="number" id="all-lineage-limit" placeholder="Limit" value="100" min="10" max="500" style="width: 100px; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <button class="btn btn-primary" onclick="loadAllObjectsLineage()">Load All</button>
+                    </div>
+                </div>
+
+                <div id="lineage-content" class="results"></div>
+            </div>
+
+            <!-- Task/Procedure DAG Tab -->
+            <div id="dag-tab" class="auth-form" style="display: none;">
+                <h3>Task & Procedure DAG</h3>
+                <div style="background: #e8f5e9; padding: 12px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
+                    <strong>Visualize dependencies:</strong> See task execution flows and procedure call graphs as directed acyclic graphs (DAG).
+                </div>
+
+                <div class="auth-method-tabs" style="margin-top: 15px; margin-bottom: 15px;">
+                    <button class="auth-tab active" onclick="switchDAGType('tasks')">Task DAG</button>
+                    <button class="auth-tab" onclick="switchDAGType('procedures')">Procedure Dependencies</button>
+                </div>
+
+                <!-- Task DAG -->
+                <div id="tasks-dag" class="auth-form active" style="display: block;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="task-database" placeholder="Database (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <input type="text" id="task-schema" placeholder="Schema (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <button class="btn btn-primary" onclick="loadTaskDAG()">Load Task DAG</button>
+                    </div>
+                    <div id="task-dag-content" class="results"></div>
+                </div>
+
+                <!-- Procedure Dependencies -->
+                <div id="procedures-dag" class="auth-form" style="display: none;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="proc-database" placeholder="Database (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <input type="text" id="proc-schema" placeholder="Schema (optional - uses current)" style="flex: 1; padding: 10px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                        <button class="btn btn-primary" onclick="loadProcedureDependencies()">Load Procedure Dependencies</button>
+                    </div>
+                    <div id="procedure-dag-content" class="results"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1816,6 +1913,518 @@
                 content.innerHTML = html;
             } catch (error) {
                 content.innerHTML = '<div class="status-error">Error analyzing query: ' + error.message + '</div>';
+            }
+        }
+
+        // Data Modeller Functions
+        function switchDataModellerTab(tab) {
+            // Hide all data modeller tabs
+            document.querySelectorAll('#datamodeller-section .auth-form').forEach(form => {
+                if (form.id.endsWith('-tab')) {
+                    form.style.display = 'none';
+                    form.classList.remove('active');
+                }
+            });
+
+            // Show selected tab
+            const tabElement = document.getElementById(tab + '-tab');
+            if (tabElement) {
+                tabElement.style.display = 'block';
+                tabElement.classList.add('active');
+            }
+
+            // Update active button
+            document.querySelectorAll('#datamodeller-section .auth-method-tabs:first-of-type .auth-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function switchDAGType(type) {
+            // Hide all DAG types
+            document.getElementById('tasks-dag').style.display = 'none';
+            document.getElementById('procedures-dag').style.display = 'none';
+            document.getElementById('tasks-dag').classList.remove('active');
+            document.getElementById('procedures-dag').classList.remove('active');
+
+            // Show selected type
+            document.getElementById(type + '-dag').style.display = 'block';
+            document.getElementById(type + '-dag').classList.add('active');
+
+            // Update active button
+            document.querySelectorAll('#dag-tab .auth-method-tabs .auth-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        async function loadTableRelationships() {
+            const content = document.getElementById('relationships-content');
+            content.innerHTML = '<div class="loading">Loading table relationships...</div>';
+
+            const database = document.getElementById('rel-database').value || null;
+            const schema = document.getElementById('rel-schema').value || null;
+
+            try {
+                let url = '/api/data-modeller/table-relationships';
+                const params = new URLSearchParams();
+                if (database) params.append('database', database);
+                if (schema) params.append('schema', schema);
+                if (params.toString()) url += '?' + params.toString();
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
+
+                // Summary
+                html += `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <h3>Summary</h3>
+                        <p><strong>Database:</strong> ${data.database}</p>
+                        ${data.schema ? '<p><strong>Schema:</strong> ' + data.schema + '</p>' : ''}
+                        <p><strong>Total Tables:</strong> ${data.summary.total_tables}</p>
+                        <p><strong>Total Relationships:</strong> ${data.summary.total_relationships}</p>
+                        <p><strong>Tables with PKs:</strong> ${data.summary.total_primary_keys}</p>
+                    </div>
+                `;
+
+                // Tables
+                if (data.tables && data.tables.length > 0) {
+                    html += '<h3>Tables</h3>';
+                    html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+
+                    data.tables.forEach(table => {
+                        const tableColumns = data.columns[table.full_name] || [];
+                        const tablePK = data.primary_keys[table.full_name];
+
+                        html += `
+                            <div style="border: 2px solid #2196f3; border-radius: 8px; padding: 15px; background: #f9f9f9;">
+                                <h4 style="margin: 0 0 10px 0; color: #2196f3;">📊 ${table.name}</h4>
+                                <p style="font-size: 12px; color: #666; margin: 5px 0;">
+                                    <strong>Type:</strong> ${table.type}<br>
+                                    <strong>Rows:</strong> ${table.row_count ? table.row_count.toLocaleString() : 'N/A'}<br>
+                                    <strong>Size:</strong> ${table.size_bytes ? (table.size_bytes / 1024 / 1024).toFixed(2) + ' MB' : 'N/A'}
+                                </p>
+                                ${tablePK ? '<p style="font-size: 12px; margin: 5px 0;"><strong>🔑 Primary Key:</strong> ' + tablePK.columns.join(', ') + '</p>' : ''}
+                                <details style="margin-top: 10px;">
+                                    <summary style="cursor: pointer; color: #2196f3; font-weight: 600;">View Columns (${tableColumns.length})</summary>
+                                    <div style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
+                                        ${tableColumns.map(col => `
+                                            <div style="padding: 5px; border-bottom: 1px solid #eee; font-size: 12px;">
+                                                <strong>${col.name}</strong>: ${col.data_type}
+                                                ${col.nullable ? '' : '<span style="color: red;">NOT NULL</span>'}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </details>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // Foreign Keys
+                if (data.foreign_keys && data.foreign_keys.length > 0) {
+                    html += '<h3>Foreign Key Relationships</h3>';
+                    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 5px; border-left: 4px solid #ff9800;">';
+                    html += '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+                    html += `
+                        <thead style="background: #f5f5f5;">
+                            <tr>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Source Table</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Source Column</th>
+                                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">→</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Target Table</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Target Column</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    `;
+
+                    data.foreign_keys.forEach(fk => {
+                        html += `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 8px;">${fk.source_table.split('.').pop()}</td>
+                                <td style="padding: 8px; font-weight: 600;">${fk.source_column}</td>
+                                <td style="padding: 8px; text-align: center; color: #ff9800;">→</td>
+                                <td style="padding: 8px;">${fk.target_table.split('.').pop()}</td>
+                                <td style="padding: 8px; font-weight: 600;">${fk.target_column}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += '</tbody></table></div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic;">No foreign key relationships found in this database/schema.</p>';
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error loading table relationships: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadObjectLineage() {
+            const content = document.getElementById('lineage-content');
+            content.innerHTML = '<div class="loading">Loading object lineage...</div>';
+
+            const objectName = document.getElementById('lineage-object').value;
+            const objectType = document.getElementById('lineage-type').value;
+            const days = document.getElementById('lineage-days').value || 30;
+
+            if (!objectName) {
+                content.innerHTML = '<div class="status-error">Please enter an object name (DATABASE.SCHEMA.OBJECT)</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/data-modeller/object-lineage?object_name=${encodeURIComponent(objectName)}&object_type=${objectType}&days=${days}`);
+                const data = await response.json();
+
+                let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
+
+                // Object info
+                html += `
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                        <h3>Object: ${data.object.full_name}</h3>
+                        <p><strong>Type:</strong> ${data.object.type}</p>
+                        <p><strong>Total Dependencies:</strong> ${data.summary.total_dependencies} (${data.summary.upstream_count} upstream, ${data.summary.downstream_count} downstream)</p>
+                    </div>
+                `;
+
+                // Upstream dependencies
+                html += '<h3>⬆️ Upstream Dependencies (${data.upstream.length})</h3>';
+                if (data.upstream && data.upstream.length > 0) {
+                    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 5px; margin-bottom: 20px;">';
+                    data.upstream.forEach(dep => {
+                        html += `
+                            <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 5px; border-left: 4px solid #ff9800;">
+                                <strong>${dep.full_name}</strong>
+                                <span style="margin-left: 10px; color: #666; font-size: 12px;">${dep.type}</span>
+                                <span style="margin-left: 10px; color: #999; font-size: 12px;">Referenced ${dep.reference_count} time(s)</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic;">No upstream dependencies found.</p>';
+                }
+
+                // Downstream dependencies
+                html += '<h3>⬇️ Downstream Dependencies (${data.downstream.length})</h3>';
+                if (data.downstream && data.downstream.length > 0) {
+                    html += '<div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">';
+                    data.downstream.forEach(dep => {
+                        html += `
+                            <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 5px; border-left: 4px solid #4caf50;">
+                                <strong>${dep.full_name}</strong>
+                                <span style="margin-left: 10px; color: #666; font-size: 12px;">${dep.type}</span>
+                                <span style="margin-left: 10px; color: #999; font-size: 12px;">References ${dep.reference_count} time(s)</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic;">No downstream dependencies found.</p>';
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error loading lineage: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadAllObjectsLineage() {
+            const content = document.getElementById('lineage-content');
+            content.innerHTML = '<div class="loading">Loading all objects lineage...</div>';
+
+            const database = document.getElementById('all-lineage-database').value;
+            const schema = document.getElementById('all-lineage-schema').value || null;
+            const limit = document.getElementById('all-lineage-limit').value || 100;
+
+            if (!database) {
+                content.innerHTML = '<div class="status-error">Please enter a database name</div>';
+                return;
+            }
+
+            try {
+                let url = `/api/data-modeller/all-objects-lineage?database=${encodeURIComponent(database)}&limit=${limit}`;
+                if (schema) url += `&schema=${encodeURIComponent(schema)}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
+
+                // Summary
+                html += `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <h3>Lineage Summary</h3>
+                        <p><strong>Database:</strong> ${data.database}</p>
+                        ${data.schema ? '<p><strong>Schema:</strong> ' + data.schema + '</p>' : ''}
+                        <p><strong>Total Objects:</strong> ${data.summary.total_objects}</p>
+                        <p><strong>Total Relationships:</strong> ${data.summary.total_relationships}</p>
+                    </div>
+                `;
+
+                // Objects by type
+                const objectsByType = {};
+                data.nodes.forEach(node => {
+                    if (!objectsByType[node.type]) objectsByType[node.type] = [];
+                    objectsByType[node.type].push(node);
+                });
+
+                html += '<h3>Objects by Type</h3>';
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">';
+
+                Object.keys(objectsByType).sort().forEach(type => {
+                    const objects = objectsByType[type];
+                    html += `
+                        <div style="border: 2px solid #2196f3; border-radius: 8px; padding: 15px; background: #f9f9f9;">
+                            <h4 style="margin: 0 0 10px 0; color: #2196f3;">${type} (${objects.length})</h4>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${objects.map(obj => `
+                                    <div style="padding: 5px; border-bottom: 1px solid #eee; font-size: 12px;">
+                                        ${obj.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+
+                // Relationships
+                if (data.edges && data.edges.length > 0) {
+                    html += '<h3 style="margin-top: 30px;">Object Relationships</h3>';
+                    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto;">';
+                    data.edges.slice(0, 100).forEach(edge => {
+                        html += `
+                            <div style="padding: 8px; margin: 3px 0; background: white; border-radius: 3px; font-size: 13px;">
+                                <strong>${edge.from}</strong>
+                                <span style="color: #ff9800; margin: 0 10px;">→</span>
+                                <strong>${edge.to}</strong>
+                                <span style="margin-left: 10px; color: #666; font-size: 11px;">${edge.source_type} → ${edge.target_type}</span>
+                            </div>
+                        `;
+                    });
+                    if (data.edges.length > 100) {
+                        html += `<p style="margin-top: 10px; color: #666; font-style: italic;">Showing first 100 of ${data.edges.length} relationships</p>`;
+                    }
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error loading lineage: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadTaskDAG() {
+            const content = document.getElementById('task-dag-content');
+            content.innerHTML = '<div class="loading">Loading task DAG...</div>';
+
+            const database = document.getElementById('task-database').value || null;
+            const schema = document.getElementById('task-schema').value || null;
+
+            try {
+                let url = '/api/data-modeller/task-dag';
+                const params = new URLSearchParams();
+                if (database) params.append('database', database);
+                if (schema) params.append('schema', schema);
+                if (params.toString()) url += '?' + params.toString();
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
+
+                // Summary
+                html += `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                        <h3>Task DAG Summary</h3>
+                        ${data.database ? '<p><strong>Database:</strong> ' + data.database + '</p>' : ''}
+                        ${data.schema ? '<p><strong>Schema:</strong> ' + data.schema + '</p>' : ''}
+                        <p><strong>Total Tasks:</strong> ${data.summary.total_tasks}</p>
+                        <p><strong>Active Tasks:</strong> ${data.summary.active_tasks}</p>
+                        <p><strong>Suspended Tasks:</strong> ${data.summary.suspended_tasks}</p>
+                        <p><strong>Dependencies:</strong> ${data.summary.total_dependencies}</p>
+                    </div>
+                `;
+
+                // Task nodes
+                if (data.nodes && data.nodes.length > 0) {
+                    html += '<h3>Tasks</h3>';
+                    html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+
+                    data.nodes.forEach(task => {
+                        const stateColor = task.state === 'started' ? '#4caf50' : task.state === 'suspended' ? '#ff9800' : '#999';
+                        html += `
+                            <div style="border: 2px solid ${stateColor}; border-radius: 8px; padding: 15px; background: #f9f9f9;">
+                                <h4 style="margin: 0 0 10px 0; color: ${stateColor};">
+                                    ${task.state === 'started' ? '▶️' : task.state === 'suspended' ? '⏸️' : '⏹️'}
+                                    ${task.name}
+                                </h4>
+                                <p style="font-size: 12px; color: #666; margin: 5px 0;">
+                                    <strong>State:</strong> <span style="color: ${stateColor}; font-weight: 600;">${task.state.toUpperCase()}</span><br>
+                                    ${task.schedule ? '<strong>Schedule:</strong> ' + task.schedule + '<br>' : ''}
+                                    ${task.warehouse ? '<strong>Warehouse:</strong> ' + task.warehouse + '<br>' : ''}
+                                    ${task.owner ? '<strong>Owner:</strong> ' + task.owner + '<br>' : ''}
+                                    ${task.condition ? '<strong>Condition:</strong> ' + task.condition + '<br>' : ''}
+                                </p>
+                                ${task.comment ? '<p style="font-size: 11px; color: #888; margin-top: 5px; font-style: italic;">' + task.comment + '</p>' : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic;">No tasks found in this database/schema.</p>';
+                }
+
+                // Task dependencies (edges)
+                if (data.edges && data.edges.length > 0) {
+                    html += '<h3>Task Dependencies (DAG)</h3>';
+                    html += '<div style="background: #fff3e0; padding: 15px; border-radius: 5px; border-left: 4px solid #ff9800;">';
+                    data.edges.forEach(edge => {
+                        html += `
+                            <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 5px; font-size: 14px;">
+                                <strong>${edge.from.split('.').pop()}</strong>
+                                <span style="color: #ff9800; margin: 0 15px; font-size: 18px;">→</span>
+                                <strong>${edge.to.split('.').pop()}</strong>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic; margin-top: 20px;">No task dependencies found (standalone tasks).</p>';
+                }
+
+                // Recent execution history
+                if (data.execution_history && data.execution_history.length > 0) {
+                    html += '<h3 style="margin-top: 30px;">Recent Task Executions (Last 7 Days)</h3>';
+                    html += '<div style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 15px; border-radius: 5px;">';
+
+                    data.execution_history.forEach(exec => {
+                        const execColor = exec.state === 'SUCCEEDED' ? '#4caf50' : exec.state === 'FAILED' ? '#f44336' : '#ff9800';
+                        html += `
+                            <div style="padding: 8px; margin: 5px 0; background: white; border-left: 4px solid ${execColor}; border-radius: 3px;">
+                                <div style="font-size: 13px;">
+                                    <strong>${exec.task.split('.').pop()}</strong>
+                                    <span style="float: right; color: ${execColor}; font-weight: 600;">${exec.state}</span>
+                                </div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">
+                                    Scheduled: ${new Date(exec.scheduled_time).toLocaleString()}
+                                    ${exec.completed_time ? ' | Completed: ' + new Date(exec.completed_time).toLocaleString() : ''}
+                                </div>
+                                ${exec.error_message ? '<div style="font-size: 11px; color: #f44336; margin-top: 5px;">Error: ' + exec.error_message + '</div>' : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error loading task DAG: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadProcedureDependencies() {
+            const content = document.getElementById('procedure-dag-content');
+            content.innerHTML = '<div class="loading">Loading procedure dependencies...</div>';
+
+            const database = document.getElementById('proc-database').value || null;
+            const schema = document.getElementById('proc-schema').value || null;
+
+            try {
+                let url = '/api/data-modeller/procedure-dependencies';
+                const params = new URLSearchParams();
+                if (database) params.append('database', database);
+                if (schema) params.append('schema', schema);
+                if (params.toString()) url += '?' + params.toString();
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
+
+                // Summary
+                html += `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #4caf50;">
+                        <h3>Procedure Dependencies Summary</h3>
+                        ${data.database ? '<p><strong>Database:</strong> ' + data.database + '</p>' : ''}
+                        ${data.schema ? '<p><strong>Schema:</strong> ' + data.schema + '</p>' : ''}
+                        <p><strong>Total Procedures:</strong> ${data.summary.total_procedures}</p>
+                        <p><strong>Total Dependencies:</strong> ${data.summary.total_dependencies}</p>
+                    </div>
+                `;
+
+                // Procedures
+                if (data.procedures && data.procedures.length > 0) {
+                    html += '<h3>Stored Procedures</h3>';
+                    html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+
+                    data.procedures.forEach(proc => {
+                        const procDeps = data.dependencies.filter(d => d.procedure === proc.full_name);
+                        html += `
+                            <div style="border: 2px solid #9c27b0; border-radius: 8px; padding: 15px; background: #f9f9f9;">
+                                <h4 style="margin: 0 0 10px 0; color: #9c27b0;">📝 ${proc.name}</h4>
+                                <p style="font-size: 12px; color: #666; margin: 5px 0;">
+                                    <strong>Language:</strong> ${proc.language}<br>
+                                    ${proc.created ? '<strong>Created:</strong> ' + new Date(proc.created).toLocaleDateString() + '<br>' : ''}
+                                    <strong>Dependencies:</strong> ${procDeps.length}
+                                </p>
+                                ${proc.comment ? '<p style="font-size: 11px; color: #888; margin-top: 5px; font-style: italic;">' + proc.comment + '</p>' : ''}
+                                ${procDeps.length > 0 ? `
+                                    <details style="margin-top: 10px;">
+                                        <summary style="cursor: pointer; color: #9c27b0; font-weight: 600;">View Dependencies</summary>
+                                        <div style="margin-top: 10px;">
+                                            ${procDeps.map(dep => `
+                                                <div style="padding: 5px; font-size: 11px; border-bottom: 1px solid #eee;">
+                                                    ${dep.referenced_object} <span style="color: #999;">(${dep.object_type})</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #666; font-style: italic;">No stored procedures found in this database/schema.</p>';
+                }
+
+                // Dependency graph
+                if (data.edges && data.edges.length > 0) {
+                    html += '<h3>Procedure Call Graph</h3>';
+                    html += '<div style="background: #f3e5f5; padding: 15px; border-radius: 5px; border-left: 4px solid #9c27b0; max-height: 400px; overflow-y: auto;">';
+                    data.edges.forEach(edge => {
+                        html += `
+                            <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 5px; font-size: 14px;">
+                                <strong>${edge.from.split('.').pop()}</strong>
+                                <span style="color: #9c27b0; margin: 0 15px; font-size: 18px;">→</span>
+                                <strong>${edge.to}</strong>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = '<div class="status-error">Error loading procedure dependencies: ' + error.message + '</div>';
             }
         }
     </script>
