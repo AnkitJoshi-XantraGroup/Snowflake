@@ -1975,6 +1975,10 @@
                 const response = await fetch(url);
                 const data = await response.json();
 
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load table relationships');
+                }
+
                 let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
 
                 // Summary
@@ -2084,6 +2088,10 @@
                 const response = await fetch(`/api/data-modeller/object-lineage?object_name=${encodeURIComponent(objectName)}&object_type=${objectType}&days=${days}`);
                 const data = await response.json();
 
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load object lineage');
+                }
+
                 let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
 
                 // Object info
@@ -2158,6 +2166,10 @@
 
                 const response = await fetch(url);
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load all objects lineage');
+                }
 
                 let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
 
@@ -2243,6 +2255,10 @@
 
                 const response = await fetch(url);
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load task DAG');
+                }
 
                 let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
 
@@ -2354,6 +2370,10 @@
 
                 const response = await fetch(url);
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load procedure dependencies');
+                }
 
                 let html = '<div style="background: white; padding: 20px; border-radius: 5px;">';
 
